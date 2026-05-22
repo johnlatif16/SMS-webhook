@@ -1,33 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Dashboard</title>
 </head>
 <body>
-    <h2>Login</h2>
+    <h2>SMS Dashboard</h2>
 
-    <input id="username" placeholder="Username" />
-    <input id="password" type="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
+    <button onclick="loadMessages()">Load Messages</button>
+
+    <ul id="list"></ul>
 
     <script>
-        async function login() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+        const token = localStorage.getItem("token");
 
-            const res = await fetch("/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
+        if (!token) {
+            window.location.href = "/login.html";
+        }
+
+        async function loadMessages() {
+            const res = await fetch("/api/messages", {
+                headers: {
+                    "Authorization": token
+                }
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                localStorage.setItem("token", data.token);
-                window.location.href = "/dashboard.html";
-            } else {
-                alert("Login failed");
-            }
+            const data = await res.json();
+
+            const list = document.getElementById("list");
+            list.innerHTML = "";
+
+            data.forEach(msg => {
+                const li = document.createElement("li");
+                li.innerText = msg.sender + " : " + msg.message;
+                list.appendChild(li);
+            });
         }
     </script>
 </body>
